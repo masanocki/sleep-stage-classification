@@ -89,60 +89,150 @@ class App(ctk.CTk):
         filePath = filedialog.askopenfilename()
         self.train_edf_file.insert(0, filePath)
 
+    def train_annotation_file_insert(self):
+        filePath = filedialog.askopenfilename()
+        self.train_annotation_file.insert(0, filePath)
+
+    def test_edf_file_insert(self):
+        filePath = filedialog.askopenfilename()
+        self.test_edf_file.insert(0, filePath)
+
+    def test_annotation_file_insert(self):
+        filePath = filedialog.askopenfilename()
+        self.test_annotation_file.insert(0, filePath)
+
     def custom_train_prediction(self):
         self.placeholder_content.destroy()
-        self.main_content.grid_rowconfigure(3, weight=1)
+        self.main_content.grid_rowconfigure(0, weight=1)
         self.main_content.grid_columnconfigure(0, weight=1)
 
         self.custom_pred_button = ctk.CTkButton(
             self.side_menu,
             text="Back to Start",
             command=self.back_to_start,
-            fg_color="#808080",
             font=ctk.CTkFont(weight="bold"),
         )
         self.custom_pred_button.grid(row=5, column=0, padx=20, pady=10)
 
         self.first_file = ctk.CTkFrame(self.main_content, corner_radius=10)
-        self.first_file.grid_rowconfigure(3, weight=1)
+        self.first_file.grid_rowconfigure(7, weight=1)
         self.first_file.grid_columnconfigure(0, weight=1)
         self.first_file.grid(row=0, column=0, padx=6, pady=6, sticky="news")
         self.first_file_label = ctk.CTkLabel(
             self.first_file,
-            text="Train Dataset",
+            text="Train Datasets",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
         self.first_file_label.grid(row=0, column=0, padx=10, pady=10, sticky="nw")
         self.train_edf_file_label = ctk.CTkLabel(
-            self.first_file, text="Raw Data:", font=ctk.CTkFont(weight="bold")
+            self.first_file, text="Raw Data:", font=ctk.CTkFont(size=15, weight="bold")
         )
         self.train_edf_file_label.grid(
             row=1,
             column=0,
             padx=10,
+            pady=(10, 0),
             sticky="w",
         )
         self.train_edf_file = ctk.CTkEntry(
             self.first_file, placeholder_text="PSG Raw data", width=700
         )
-        self.train_edf_file.grid(row=1, column=0, padx=10, sticky="s")
+        self.train_edf_file.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="s")
         self.train_edf_button = ctk.CTkButton(
             self.first_file,
             text="Upload",
             font=ctk.CTkFont(size=15, weight="bold"),
             command=self.train_edf_file_insert,
         )
-        self.train_edf_button.grid(row=1, column=0, padx=(0, 10), sticky="e")
+        self.train_edf_button.grid(
+            row=1, column=0, padx=(0, 10), pady=(10, 0), sticky="e"
+        )
 
-        self.second_file = ctk.CTkFrame(self.main_content, corner_radius=10)
-        self.second_file.grid_rowconfigure(3, weight=1)
-        self.second_file.grid_columnconfigure(0, weight=1)
-        self.second_file.grid(row=3, column=0, padx=6, pady=6, sticky="news")
-        self.file_2_button = ctk.CTkButton(
-            self.second_file,
+        self.train_annotation_file_label = ctk.CTkLabel(
+            self.first_file,
+            text="Annotations:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.train_annotation_file_label.grid(
+            row=2,
+            column=0,
+            padx=10,
+            pady=(20, 0),
+            sticky="w",
+        )
+        self.train_annotation_file = ctk.CTkEntry(
+            self.first_file, placeholder_text="Data for Annotations", width=700
+        )
+        self.train_annotation_file.grid(
+            row=2, column=0, pady=(20, 0), padx=10, sticky="s"
+        )
+        self.train_annotation_button = ctk.CTkButton(
+            self.first_file,
             text="Upload",
-            width=250,
-            height=90,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.train_annotation_file_insert,
+        )
+        self.train_annotation_button.grid(
+            row=2, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
+        )
+
+        self.second_file_label = ctk.CTkLabel(
+            self.first_file,
+            text="Test Datasets",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
-        self.file_2_button.grid(row=2, column=0, pady=(5, 10), sticky="s")
+        self.second_file_label.grid(
+            row=4, column=0, padx=10, pady=(50, 10), sticky="nw"
+        )
+
+        self.test_edf_file_label = ctk.CTkLabel(
+            self.first_file, text="Raw Data:", font=ctk.CTkFont(size=15, weight="bold")
+        )
+        self.test_edf_file_label.grid(
+            row=5,
+            column=0,
+            padx=10,
+            pady=(10, 0),
+            sticky="w",
+        )
+        self.test_edf_file = ctk.CTkEntry(
+            self.first_file, placeholder_text="PSG Raw data", width=700
+        )
+        self.test_edf_file.grid(row=5, column=0, padx=10, pady=(10, 0), sticky="s")
+        self.test_edf_button = ctk.CTkButton(
+            self.first_file,
+            text="Upload",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.test_edf_file_insert,
+        )
+        self.test_edf_button.grid(
+            row=5, column=0, padx=(0, 10), pady=(10, 0), sticky="e"
+        )
+
+        self.test_annotation_file_label = ctk.CTkLabel(
+            self.first_file,
+            text="Annotations:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.test_annotation_file_label.grid(
+            row=6,
+            column=0,
+            padx=10,
+            pady=(20, 0),
+            sticky="w",
+        )
+        self.test_annotation_file = ctk.CTkEntry(
+            self.first_file, placeholder_text="Data for Annotations", width=700
+        )
+        self.test_annotation_file.grid(
+            row=6, column=0, padx=10, pady=(20, 0), sticky="s"
+        )
+        self.test_annotation_button = ctk.CTkButton(
+            self.first_file,
+            text="Upload",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.test_annotation_file_insert,
+        )
+        self.test_annotation_button.grid(
+            row=6, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
+        )
