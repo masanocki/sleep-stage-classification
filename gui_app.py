@@ -101,6 +101,22 @@ class App(ctk.CTk):
         filePath = filedialog.askopenfilename()
         self.test_annotation_file.insert(0, filePath)
 
+    def n_estimators_progressbar_on_change(self, value):
+        self.n_estimators_value.delete(0, "end")
+        self.n_estimators_value.insert(0, int(value))
+
+    def n_estimators_value_on_change(self, value):
+        if value.isdigit():
+            if int(value) > 200:
+                self.n_estimators_progressbar.set(1)
+                self.n_estimators_value.configure(fg_color="#ff0033")
+                return True
+
+            if self.n_estimators_value.cget("fg_color") == "#ff0033":
+                self.n_estimators_value.configure(fg_color="#343638")
+            self.n_estimators_progressbar.set(int(value))
+        return True
+
     def custom_train_prediction(self):
         self.placeholder_content.destroy()
         self.main_content.grid_rowconfigure(0, weight=1)
@@ -115,7 +131,7 @@ class App(ctk.CTk):
         self.custom_pred_button.grid(row=5, column=0, padx=20, pady=10)
 
         self.first_file = ctk.CTkFrame(self.main_content, corner_radius=10)
-        self.first_file.grid_rowconfigure(7, weight=1)
+        self.first_file.grid_rowconfigure(12, weight=1)
         self.first_file.grid_columnconfigure(0, weight=1)
         self.first_file.grid(row=0, column=0, padx=6, pady=6, sticky="news")
         self.first_file_label = ctk.CTkLabel(
@@ -235,4 +251,41 @@ class App(ctk.CTk):
         )
         self.test_annotation_button.grid(
             row=6, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
+        )
+
+        self.adjustment_label = ctk.CTkLabel(
+            self.first_file,
+            text="Adjust Algorithm",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.adjustment_label.grid(row=7, column=0, padx=10, pady=(50, 10), sticky="nw")
+
+        self.n_estimators_label = ctk.CTkLabel(
+            self.first_file,
+            text="n_estimators:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.n_estimators_label.grid(
+            row=8, column=0, padx=10, pady=(20, 0), sticky="nw"
+        )
+
+        self.n_estimators_progressbar = ctk.CTkSlider(
+            self.first_file,
+            from_=1,
+            to=200,
+            number_of_steps=200,
+            width=700,
+            command=self.n_estimators_progressbar_on_change,
+        )
+        self.n_estimators_progressbar.grid(row=8, column=0, pady=(20, 0))
+
+        self.n_estimators_reg = self.register(self.n_estimators_value_on_change)
+
+        self.n_estimators_value = ctk.CTkEntry(
+            self.first_file,
+            validate="key",
+            validatecommand=(self.n_estimators_reg, "%P"),
+        )
+        self.n_estimators_value.grid(
+            row=8, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
         )
