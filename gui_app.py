@@ -2,6 +2,9 @@ import customtkinter as ctk
 import tkinter as tk
 from customtkinter import filedialog
 from PIL import Image
+import random
+import sys
+from custompred import CustomTrainPredict
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")
@@ -116,6 +119,67 @@ class App(ctk.CTk):
                 self.n_estimators_value.configure(fg_color="#343638")
             self.n_estimators_progressbar.set(int(value))
         return True
+
+    def min_samples_leaf_progressbar_on_change(self, value):
+        self.min_samples_leaf_value.delete(0, "end")
+        self.min_samples_leaf_value.insert(0, int(value))
+
+    def min_samples_leaf_value_on_change(self, value):
+        if value.isdigit():
+            if int(value) > 100:
+                self.min_samples_leaf_progressbar.set(1)
+                self.min_samples_leaf_value.configure(fg_color="#ff0033")
+                return True
+
+            if self.min_samples_leaf_value.cget("fg_color") == "#ff0033":
+                self.min_samples_leaf_value.configure(fg_color="#343638")
+            self.min_samples_leaf_progressbar.set(int(value))
+        return True
+
+    def generate_random_state(self):
+        self.random_state_value.delete(0, "end")
+        self.random_state_value.insert(0, random.randint(0, 4294967295))
+
+    def make_custom_train_prediction(self):
+        if self.max_features_optionmenu.get() == "None":
+            clf = CustomTrainPredict(
+                train_raw_data_path=self.train_edf_file.get(),
+                train_annotations_path=self.train_annotation_file.get(),
+                test_raw_data_path=self.test_edf_file.get(),
+                test_annotations_path=self.test_annotation_file.get(),
+                n_estimators=int(self.n_estimators_value.get()),
+                min_samples_leaf=int(self.min_samples_leaf_value.get()),
+                max_features=None,
+                random_state=int(self.random_state_value.get()),
+            )
+        else:
+            clf = CustomTrainPredict(
+                train_raw_data_path=self.train_edf_file.get(),
+                train_annotations_path=self.train_annotation_file.get(),
+                test_raw_data_path=self.test_edf_file.get(),
+                test_annotations_path=self.test_annotation_file.get(),
+                n_estimators=int(self.n_estimators_value.get()),
+                min_samples_leaf=int(self.min_samples_leaf_value.get()),
+                max_features=self.max_features_optionmenu.get(),
+                random_state=int(self.random_state_value.get()),
+            )
+        # self.loading_screen()
+        clf.predict()
+
+    def loading_screen(self):
+        self.loading_screen_frame = ctk.CTkFrame(self, corner_radius=10)
+        self.loading_screen_frame.grid(
+            row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
+        )
+        self.prediction_progress_bar = ctk.CTkProgressBar(
+            self.loading_screen_frame, orientation="horizontal", mode="determinate"
+        )
+        self.prediction_progress_bar.grid(row=0, column=0, sticky="news")
+        # self.main_content.grid(
+        #     row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
+        # )
+        # self.main_content.grid_rowconfigure(0, weight=1)
+        # self.main_content.grid_columnconfigure(0, weight=1)
 
     def custom_train_prediction(self):
         self.placeholder_content.destroy()
@@ -285,7 +349,115 @@ class App(ctk.CTk):
             self.first_file,
             validate="key",
             validatecommand=(self.n_estimators_reg, "%P"),
+            justify="center",
         )
         self.n_estimators_value.grid(
             row=8, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
         )
+        test = ctk.IntVar()
+        self.min_samples_leaf_label = ctk.CTkLabel(
+            self.first_file,
+            text="min_samples_leaf:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.min_samples_leaf_label.grid(
+            row=9, column=0, padx=10, pady=(20, 0), sticky="nw"
+        )
+
+        self.min_samples_leaf_progressbar = ctk.CTkSlider(
+            self.first_file,
+            from_=1,
+            to=100,
+            number_of_steps=100,
+            width=700,
+            command=self.min_samples_leaf_progressbar_on_change,
+        )
+        self.min_samples_leaf_progressbar.grid(row=9, column=0, pady=(20, 0))
+
+        self.min_samples_leaf_reg = self.register(self.min_samples_leaf_value_on_change)
+
+        self.min_samples_leaf_value = ctk.CTkEntry(
+            self.first_file,
+            validate="key",
+            validatecommand=(self.min_samples_leaf_reg, "%P"),
+            justify="center",
+        )
+        self.min_samples_leaf_value.grid(
+            row=9, column=0, padx=(0, 10), pady=(20, 0), sticky="e"
+        )
+
+        self.max_features_label = ctk.CTkLabel(
+            self.first_file,
+            text="max_features:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.max_features_label.grid(
+            row=10, column=0, padx=10, pady=(20, 0), sticky="nw"
+        )
+
+        self.max_features_optionmenu = ctk.CTkOptionMenu(
+            self.first_file,
+            values=["sqrt", "log2", "None"],
+            anchor="center",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            dropdown_font=ctk.CTkFont(size=13, weight="bold"),
+        )
+
+        self.max_features_optionmenu.grid(
+            row=10, column=0, padx=(130, 0), pady=(20, 0), sticky="nw"
+        )
+
+        self.random_state_label = ctk.CTkLabel(
+            self.first_file,
+            text="random_state:",
+            font=ctk.CTkFont(size=15, weight="bold"),
+        )
+        self.random_state_label.grid(
+            row=11, column=0, padx=10, pady=(20, 0), sticky="nw"
+        )
+
+        self.random_state_value = ctk.CTkEntry(
+            self.first_file, width=200, justify="center"
+        )
+
+        self.random_state_value.grid(
+            row=11, column=0, padx=(130, 0), pady=(20, 0), sticky="nw"
+        )
+        self.random_state_generate_button = ctk.CTkButton(
+            self.first_file,
+            text="Generate",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.generate_random_state,
+        )
+        self.random_state_generate_button.grid(
+            row=11, column=0, padx=(340, 0), pady=(20, 0), sticky="nw"
+        )
+
+        self.custom_predict_clear_button = ctk.CTkButton(
+            self.first_file,
+            text="Clear",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.custom_train_prediction,
+        )
+
+        self.custom_predict_clear_button.grid(
+            row=13, column=0, padx=(0, 170), pady=(0, 20), sticky="e"
+        )
+
+        self.custom_predict_start_button = ctk.CTkButton(
+            self.first_file,
+            text="Start",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.make_custom_train_prediction,
+        )
+
+        self.custom_predict_start_button.grid(
+            row=13, column=0, padx=(0, 10), pady=(0, 20), sticky="e"
+        )
+
+        # default values setters
+        self.n_estimators_progressbar.set(100)
+        self.n_estimators_value.insert(0, 100)
+        self.min_samples_leaf_progressbar.set(1)
+        self.min_samples_leaf_value.insert(0, 1)
+        self.random_state_value.insert(0, 42)
