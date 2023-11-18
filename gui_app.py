@@ -90,18 +90,22 @@ class App(ctk.CTk):
 
     def train_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.train_edf_file.delete(0, "end")
         self.train_edf_file.insert(0, filePath)
 
     def train_annotation_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.train_annotation_file.delete(0, "end")
         self.train_annotation_file.insert(0, filePath)
 
     def test_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.test_edf_file.delete(0, "end")
         self.test_edf_file.insert(0, filePath)
 
     def test_annotation_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.test_annotation_file.delete(0, "end")
         self.test_annotation_file.insert(0, filePath)
 
     def n_estimators_progressbar_on_change(self, value):
