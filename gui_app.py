@@ -1,13 +1,12 @@
+import random
+import sys
 import customtkinter as ctk
 import tkinter as tk
 from customtkinter import filedialog
 from PIL import Image
-import random
-import sys
 from custompred import CustomTrainPredict
 from io import StringIO
 from threading import Thread
-from subprocess import Popen, PIPE
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")
@@ -93,21 +92,25 @@ class App(ctk.CTk):
 
     def train_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.train_edf_file.configure(fg_color="#343638")
         self.train_edf_file.delete(0, "end")
         self.train_edf_file.insert(0, filePath)
 
     def train_annotation_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.train_annotation_file.configure(fg_color="#343638")
         self.train_annotation_file.delete(0, "end")
         self.train_annotation_file.insert(0, filePath)
 
     def test_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.test_edf_file.configure(fg_color="#343638")
         self.test_edf_file.delete(0, "end")
         self.test_edf_file.insert(0, filePath)
 
     def test_annotation_file_insert(self):
         filePath = filedialog.askopenfilename()
+        self.test_annotation_file.configure(fg_color="#343638")
         self.test_annotation_file.delete(0, "end")
         self.test_annotation_file.insert(0, filePath)
 
@@ -180,8 +183,10 @@ class App(ctk.CTk):
         sys.stdout = old_stdout
 
     def console_output_textbox_insert(self, my_stdout, progress_check):
+        self.console_output_textbox.configure(state="normal")
         self.console_output_textbox.delete("0.0", "end")
         self.console_output_textbox.insert("end", my_stdout.getvalue())
+        self.console_output_textbox.configure(state="disabled")
         self.console_output_textbox.see("end")
         if self.console_output_textbox.index("end") != progress_check:
             elements_done = int(float(self.console_output_textbox.index("end"))) - int(
@@ -203,11 +208,12 @@ class App(ctk.CTk):
             i = 2
         self.loading_animation.configure(image=self.animation_gif_frames[i])
         if self.t.is_alive():
-            self.after(60, lambda: self.loading_screen_gif_update(i + 1))
+            self.after(50, lambda: self.loading_screen_gif_update(i + 1))
 
     def start_make_custom_train_prediction(self):
-        self.t = Thread(target=self.make_custom_train_prediction, daemon=True)
-        self.t.start()
+        if self.custom_train_prediction_validation():
+            self.t = Thread(target=self.make_custom_train_prediction, daemon=True)
+            self.t.start()
 
     def create_gif(self, frames, framescnt):
         result = []
@@ -235,6 +241,7 @@ class App(ctk.CTk):
             self.loading_screen_frame, text="", image=self.animation_gif_frames[2]
         )
         self.loading_animation.grid(row=0, column=0, pady=(0, 250))
+
         self.prediction_progress_bar = ctk.CTkProgressBar(
             self.loading_screen_frame,
             orientation="horizontal",
@@ -244,11 +251,27 @@ class App(ctk.CTk):
         self.prediction_progress_bar.grid(row=0, column=0, padx=10, sticky="we")
         self.prediction_progress_bar.set(0)
         self.console_output_textbox = ctk.CTkTextbox(
-            self.loading_screen_frame, height=310
+            self.loading_screen_frame, height=310, state="disabled"
         )
         self.console_output_textbox.grid(
             row=0, column=0, padx=10, pady=(0, 10), sticky="wes"
         )
+
+    def custom_train_prediction_validation(self):
+        flag = True
+        if self.train_edf_file.get() == "":
+            self.train_edf_file.configure(fg_color="#ff0033")
+            flag = False
+        if self.train_annotation_file.get() == "":
+            self.train_annotation_file.configure(fg_color="#ff0033")
+            flag = False
+        if self.test_edf_file.get() == "":
+            self.test_edf_file.configure(fg_color="#ff0033")
+            flag = False
+        if self.test_annotation_file.get() == "":
+            self.test_annotation_file.configure(fg_color="#ff0033")
+            flag = False
+        return flag
 
     def custom_train_prediction_screen(self):
         self.placeholder_content.destroy()
