@@ -46,7 +46,7 @@ class App(ctk.CTk):
         self.custom_pred_button = ctk.CTkButton(
             self.side_menu,
             text="Custom Train Prediction",
-            command=self.custom_train_prediction,
+            command=self.custom_train_prediction_screen,
             font=ctk.CTkFont(size=15, weight="bold"),
             border_spacing=10,
         )
@@ -173,24 +173,53 @@ class App(ctk.CTk):
         self.loading_screen()
         old_stdout = sys.stdout
         sys.stdout = my_stdout = StringIO()
-        # self.console_output_textbox.insert(my_stdout)
-        self.after(1, lambda: self.console_output_textbox_insert(my_stdout))
+        self.after(1, lambda: self.console_output_textbox_insert(my_stdout, "0.0"))
+        self.after(1, lambda: self.loading_screen_gif_update(0))
         clf.predict()
 
         sys.stdout = old_stdout
 
-    def console_output_textbox_insert(self, my_stdout):
+    def console_output_textbox_insert(self, my_stdout, progress_check):
         self.console_output_textbox.delete("0.0", "end")
         self.console_output_textbox.insert("end", my_stdout.getvalue())
         self.console_output_textbox.see("end")
+        if self.console_output_textbox.index("end") != progress_check:
+            elements_done = int(float(self.console_output_textbox.index("end"))) - int(
+                float(progress_check)
+            )
+            self.prediction_progress_bar.set(
+                self.prediction_progress_bar.get() + 0.024 * elements_done
+            )
         if self.t.is_alive():
-            self.after(1, lambda: self.console_output_textbox_insert(my_stdout))
-        else:
-            print("koniec")
+            self.after(
+                1,
+                lambda: self.console_output_textbox_insert(
+                    my_stdout, self.console_output_textbox.index("end")
+                ),
+            )
+
+    def loading_screen_gif_update(self, i):
+        if i > 96:
+            i = 2
+        self.loading_animation.configure(image=self.animation_gif_frames[i])
+        if self.t.is_alive():
+            self.after(60, lambda: self.loading_screen_gif_update(i + 1))
 
     def start_make_custom_train_prediction(self):
         self.t = Thread(target=self.make_custom_train_prediction, daemon=True)
         self.t.start()
+
+    def create_gif(self, frames, framescnt):
+        result = []
+        for i in range(framescnt):
+            gif_frame = ctk.CTkImage(
+                light_image=frames.copy(),
+                dark_image=frames.copy(),
+                size=(350, 350),
+            )
+            result.append(gif_frame)
+            frames.seek(i)
+        return result
 
     def loading_screen(self):
         self.first_file.grid_forget()
@@ -198,13 +227,14 @@ class App(ctk.CTk):
         self.loading_screen_frame.grid(row=0, column=0, padx=6, pady=6, sticky="news")
         self.loading_screen_frame.grid_rowconfigure(0, weight=1)
         self.loading_screen_frame.grid_columnconfigure(0, weight=1)
-        self.loading_animation_gif = tk.PhotoImage(
-            file="./assets/loading_screen_animation.gif", format="gif -index 2"
-        )
+        self.animation_gif_whole = Image.open("./assets/loading_screen_animation.gif")
+
+        self.animation_gif_frames = self.create_gif(self.animation_gif_whole, 97)
+
         self.loading_animation = ctk.CTkLabel(
-            self.loading_screen_frame, text="", image=self.loading_animation_gif
+            self.loading_screen_frame, text="", image=self.animation_gif_frames[2]
         )
-        self.loading_animation.grid(row=0, column=0, pady=(0, 70))
+        self.loading_animation.grid(row=0, column=0, pady=(0, 250))
         self.prediction_progress_bar = ctk.CTkProgressBar(
             self.loading_screen_frame,
             orientation="horizontal",
@@ -212,19 +242,15 @@ class App(ctk.CTk):
             height=25,
         )
         self.prediction_progress_bar.grid(row=0, column=0, padx=10, sticky="we")
+        self.prediction_progress_bar.set(0)
         self.console_output_textbox = ctk.CTkTextbox(
             self.loading_screen_frame, height=310
         )
         self.console_output_textbox.grid(
             row=0, column=0, padx=10, pady=(0, 10), sticky="wes"
         )
-        # self.main_content.grid(
-        #     row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
-        # )
-        # self.main_content.grid_rowconfigure(0, weight=1)
-        # self.main_content.grid_columnconfigure(0, weight=1)
 
-    def custom_train_prediction(self):
+    def custom_train_prediction_screen(self):
         self.placeholder_content.destroy()
         self.main_content.grid_rowconfigure(0, weight=1)
         self.main_content.grid_columnconfigure(0, weight=1)
@@ -362,7 +388,7 @@ class App(ctk.CTk):
 
         self.adjustment_label = ctk.CTkLabel(
             self.first_file,
-            text="Adjust Algorithm",
+            text="Parameters Tuning",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
         self.adjustment_label.grid(row=7, column=0, padx=10, pady=(50, 10), sticky="nw")
@@ -480,7 +506,7 @@ class App(ctk.CTk):
             self.first_file,
             text="Clear",
             font=ctk.CTkFont(size=15, weight="bold"),
-            command=self.custom_train_prediction,
+            command=self.custom_train_prediction_screen,
         )
 
         self.custom_predict_clear_button.grid(
