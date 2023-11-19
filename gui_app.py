@@ -61,6 +61,7 @@ class App(ctk.CTk):
             self.side_menu,
             values=["Light", "Dark", "System"],
             command=self.theme_mode,
+            fg_color="#282828",
         )
         self.theme_mode_options.set(ctk.get_appearance_mode())
         self.theme_mode_options.grid(row=7, column=0, padx=20, pady=10)
@@ -277,14 +278,15 @@ class App(ctk.CTk):
         self.placeholder_content.destroy()
         self.main_content.grid_rowconfigure(0, weight=1)
         self.main_content.grid_columnconfigure(0, weight=1)
+        self.custom_pred_button.configure(fg_color="#282828")
 
-        self.custom_pred_button = ctk.CTkButton(
+        self.custom_pred_back_to_start_button = ctk.CTkButton(
             self.side_menu,
             text="Back to Start",
             command=self.back_to_start,
             font=ctk.CTkFont(weight="bold"),
         )
-        self.custom_pred_button.grid(row=5, column=0, padx=20, pady=10)
+        self.custom_pred_back_to_start_button.grid(row=5, column=0, padx=20, pady=10)
 
         self.first_file = ctk.CTkFrame(self.main_content, corner_radius=10)
         self.first_file.grid_rowconfigure(12, weight=1)
