@@ -2,6 +2,7 @@ import random
 import sys
 import customtkinter as ctk
 import tkinter as tk
+from tkinter import ttk
 from customtkinter import filedialog
 from PIL import Image
 from custompred import CustomTrainPredict
@@ -228,34 +229,84 @@ class App(ctk.CTk):
             frames.seek(i)
         return result
 
-    def reset_result_buttons(self):
+    def reset_result(self):
         self.first_result_button.configure(
             height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
         )
         self.second_result_button.configure(
             height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
         )
+        self.first_result_frame.grid_forget()
+        self.second_result_frame.grid_forget()
 
     def first_result_screen(self):
-        self.reset_result_buttons()
+        self.reset_result()
+        self.first_result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
+        self.first_result_frame.rowconfigure(4, weight=1)
+        self.first_result_frame.columnconfigure(0, weight=1)
         self.first_result_button.configure(height=30, fg_color=["gray85", "gray16"])
-        self.f1_placeholder = ctk.CTkLabel(self.result_frame, text="f1")
-        self.f1_placeholder.grid(row=0, column=0, sticky="news")
+        self.first_result_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Summary",
+            font=ctk.CTkFont(size=30, weight="bold"),
+        )
+        self.first_result_label.grid(row=1, column=0, padx=10, pady=10, sticky="nw")
+        self.train_result_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Train dataset:",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.train_result_label.grid(
+            row=2, column=0, padx=(10, 5), pady=10, sticky="nw"
+        )
+        self.train_result_info = ctk.CTkTextbox(
+            self.first_result_frame,
+            fg_color=["gray85", "gray16"],
+            font=ctk.CTkFont(size=18),
+            width=400,
+            height=265,
+        )
+        self.train_result_info.grid(row=3, column=0, padx=(10, 5), sticky="nw")
+        self.test_result_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Test dataset:",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.test_result_label.grid(
+            row=2, column=0, padx=(5, 280), pady=10, sticky="ne"
+        )
+        self.test_result_info = ctk.CTkTextbox(
+            self.first_result_frame,
+            fg_color=["gray85", "gray16"],
+            font=ctk.CTkFont(size=18),
+            width=400,
+            height=265,
+        )
+        self.test_result_info.grid(row=3, column=0, padx=(5, 10), sticky="ne")
+        self.infos_separator = ctk.CTkFrame(
+            self.first_result_frame, fg_color="#181818", height=240, width=2
+        )
+        self.infos_separator.grid(row=3, column=0, sticky="n")
+        self.train_result_info.insert("0.0", str(self.tr)[27:-1])
+        self.test_result_info.insert("0.0", str(self.ts)[27:-1])
+        self.train_result_info.configure(state="disabled")
+        self.test_result_info.configure(state="disabled")
 
     def second_result_screen(self):
-        self.reset_result_buttons()
+        self.reset_result()
+        self.second_result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
         self.second_result_button.configure(height=30, fg_color=["gray85", "gray16"])
-        self.f2_placeholder = ctk.CTkLabel(self.result_frame, text="f2")
+        self.f2_placeholder = ctk.CTkLabel(self.second_result_frame, text="f2")
         self.f2_placeholder.grid(row=0, column=0, sticky="news")
 
     def result_screen(self):
-        self.result_frame = ctk.CTkFrame(self.main_content, corner_radius=10)
-        self.result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
+        self.first_result_frame = ctk.CTkFrame(self.main_content, corner_radius=0)
+        self.second_result_frame = ctk.CTkFrame(self.main_content, corner_radius=0)
         self.first_result_button = ctk.CTkButton(
             self.main_content,
             corner_radius=0,
             hover_color="#282828",
-            text="f1",
+            text="Summary",
             command=self.first_result_screen,
         )
         self.first_result_button.grid(row=0, column=0, sticky="nw")
@@ -268,7 +319,18 @@ class App(ctk.CTk):
             command=self.second_result_screen,
         )
         self.second_result_button.grid(row=0, column=0, padx=(145, 0), sticky="nw")
-        self.result_frame.lift()
+        # self.result_frame.lift()
+        self.clf = CustomTrainPredict(
+            train_raw_data_path="./datasets/recordings/SN001.edf",
+            train_annotations_path="./datasets/recordings/SN001_sleepscoring.edf",
+            test_raw_data_path="./datasets/recordings/SN002.edf",
+            test_annotations_path="./datasets/recordings/SN002_sleepscoring.edf",
+            n_estimators=100,
+            min_samples_leaf=1,
+            max_features="sqrt",
+            random_state=42,
+        )
+        self.tr, self.ts = self.clf.predict()
         self.first_result_screen()
 
     def loading_screen(self):
