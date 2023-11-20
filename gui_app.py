@@ -2,6 +2,7 @@ import random
 import sys
 import customtkinter as ctk
 import tkinter as tk
+import time
 from tkinter import ttk
 from customtkinter import filedialog
 from PIL import Image
@@ -242,7 +243,7 @@ class App(ctk.CTk):
     def first_result_screen(self):
         self.reset_result()
         self.first_result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
-        self.first_result_frame.rowconfigure(4, weight=1)
+        self.first_result_frame.rowconfigure(7, weight=1)
         self.first_result_frame.columnconfigure(0, weight=1)
         self.first_result_button.configure(height=30, fg_color=["gray85", "gray16"])
         self.first_result_label = ctk.CTkLabel(
@@ -287,8 +288,135 @@ class App(ctk.CTk):
             self.first_result_frame, fg_color="#181818", height=240, width=2
         )
         self.infos_separator.grid(row=3, column=0, sticky="n")
+        self.result_config_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Algorithm config:",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.result_config_label.grid(row=4, column=0, padx=(5, 10), sticky="nw")
+
+        self.result_n_estimators_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="n_estimators:",
+            font=ctk.CTkFont(size=18, weight="bold"),
+        )
+        self.result_n_estimators_label.grid(
+            row=5, column=0, padx=(5, 10), pady=10, sticky="nw"
+        )
+        self.result_n_estimators_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=18),
+            width=50,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_n_estimators_value.grid(
+            row=5, column=0, padx=(130, 10), pady=10, sticky="nw"
+        )
+        self.result_min_samples_leaf_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="min_samples_leaf:",
+            font=ctk.CTkFont(size=18, weight="bold"),
+        )
+        self.result_min_samples_leaf_label.grid(
+            row=5, column=0, padx=(200, 10), pady=10, sticky="nw"
+        )
+        self.result_min_samples_leaf_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=18),
+            width=50,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_min_samples_leaf_value.grid(
+            row=5, column=0, padx=(370, 10), pady=10, sticky="nw"
+        )
+        self.result_max_features_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="max_features:",
+            font=ctk.CTkFont(size=18, weight="bold"),
+        )
+        self.result_max_features_label.grid(row=5, column=0, pady=10, sticky="n")
+        self.result_max_features_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=18),
+            width=60,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_max_features_value.grid(
+            row=5, column=0, padx=(210, 10), pady=10, sticky="n"
+        )
+        self.result_random_state_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="random_state:",
+            font=ctk.CTkFont(size=18, weight="bold"),
+        )
+        self.result_random_state_label.grid(
+            row=5, column=0, padx=(430, 10), pady=10, sticky="n"
+        )
+        self.result_random_state_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=18),
+            width=200,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_random_state_value.grid(
+            row=5, column=0, padx=(770, 10), pady=10, sticky="n"
+        )
+        self.result_accuracy_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Accuracy:",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.result_accuracy_label.grid(
+            row=6, column=0, padx=(5, 10), pady=10, sticky="nw"
+        )
+        self.result_accuracy_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=20),
+            width=400,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_accuracy_value.grid(
+            row=6, column=0, padx=(100, 10), pady=10, sticky="nw"
+        )
+        self.result_total_time_label = ctk.CTkLabel(
+            self.first_result_frame,
+            text="Total Time:",
+            font=ctk.CTkFont(size=20, weight="bold"),
+        )
+        self.result_total_time_label.grid(
+            row=7, column=0, padx=(5, 10), pady=10, sticky="nw"
+        )
+        self.result_total_time_value = ctk.CTkEntry(
+            self.first_result_frame,
+            font=ctk.CTkFont(size=20),
+            width=400,
+            fg_color=["gray85", "gray16"],
+            border_color=["gray85", "gray16"],
+        )
+        self.result_total_time_value.grid(
+            row=7, column=0, padx=(115, 10), pady=10, sticky="nw"
+        )
+        ###
         self.train_result_info.insert("0.0", str(self.tr)[27:-1])
         self.test_result_info.insert("0.0", str(self.ts)[27:-1])
+        self.result_n_estimators_value.insert(0, self.n_est)
+        self.result_min_samples_leaf_value.insert(0, self.min_sampl)
+        self.result_max_features_value.insert(0, self.max_feat)
+        self.result_random_state_value.insert(0, self.rand_st)
+        self.result_accuracy_value.insert(0, round(self.accuracy, 2))
+        self.result_total_time_value.insert(0, round(self.total_time, 2))
+
+        self.result_total_time_value.configure(state="disabled")
+        self.result_accuracy_value.configure(state="disabled")
+        self.result_random_state_value.configure(state="disabled")
+        self.result_max_features_value.configure(state="disabled")
+        self.result_min_samples_leaf_value.configure(state="disabled")
+        self.result_n_estimators_value.configure(state="disabled")
         self.train_result_info.configure(state="disabled")
         self.test_result_info.configure(state="disabled")
 
@@ -319,7 +447,7 @@ class App(ctk.CTk):
             command=self.second_result_screen,
         )
         self.second_result_button.grid(row=0, column=0, padx=(145, 0), sticky="nw")
-        # self.result_frame.lift()
+
         self.clf = CustomTrainPredict(
             train_raw_data_path="./datasets/recordings/SN001.edf",
             train_annotations_path="./datasets/recordings/SN001_sleepscoring.edf",
@@ -330,7 +458,18 @@ class App(ctk.CTk):
             max_features="sqrt",
             random_state=42,
         )
-        self.tr, self.ts = self.clf.predict()
+        self.start_pred = time.time()
+        (
+            self.tr,
+            self.ts,
+            self.n_est,
+            self.min_sampl,
+            self.max_feat,
+            self.rand_st,
+            self.accuracy,
+        ) = self.clf.predict()
+        self.stop_pred = time.time()
+        self.total_time = self.stop_pred - self.start_pred
         self.first_result_screen()
 
     def loading_screen(self):
