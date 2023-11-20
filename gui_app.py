@@ -45,7 +45,7 @@ class App(ctk.CTk):
         self.custom_pred_button = ctk.CTkButton(
             self.side_menu,
             text="Custom Train Prediction",
-            command=self.custom_train_prediction_screen,
+            command=self.result_screen,
             font=ctk.CTkFont(size=15, weight="bold"),
             border_spacing=10,
         )
@@ -228,10 +228,53 @@ class App(ctk.CTk):
             frames.seek(i)
         return result
 
+    def reset_result_buttons(self):
+        self.first_result_button.configure(
+            height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
+        )
+        self.second_result_button.configure(
+            height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
+        )
+
+    def first_result_screen(self):
+        self.reset_result_buttons()
+        self.first_result_button.configure(height=30, fg_color=["gray85", "gray16"])
+        self.f1_placeholder = ctk.CTkLabel(self.result_frame, text="f1")
+        self.f1_placeholder.grid(row=0, column=0, sticky="news")
+
+    def second_result_screen(self):
+        self.reset_result_buttons()
+        self.second_result_button.configure(height=30, fg_color=["gray85", "gray16"])
+        self.f2_placeholder = ctk.CTkLabel(self.result_frame, text="f2")
+        self.f2_placeholder.grid(row=0, column=0, sticky="news")
+
+    def result_screen(self):
+        self.result_frame = ctk.CTkFrame(self.main_content, corner_radius=10)
+        self.result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
+        self.first_result_button = ctk.CTkButton(
+            self.main_content,
+            corner_radius=0,
+            hover_color="#282828",
+            text="f1",
+            command=self.first_result_screen,
+        )
+        self.first_result_button.grid(row=0, column=0, sticky="nw")
+
+        self.second_result_button = ctk.CTkButton(
+            self.main_content,
+            corner_radius=0,
+            hover_color="#282828",
+            text="f2",
+            command=self.second_result_screen,
+        )
+        self.second_result_button.grid(row=0, column=0, padx=(145, 0), sticky="nw")
+        self.result_frame.lift()
+        self.first_result_screen()
+
     def loading_screen(self):
         self.first_file.grid_forget()
         self.loading_screen_frame = ctk.CTkFrame(self.main_content, corner_radius=10)
-        self.loading_screen_frame.grid(row=0, column=0, padx=6, pady=6, sticky="news")
+        self.loading_screen_frame.grid(row=0, column=0, sticky="news")
         self.loading_screen_frame.grid_rowconfigure(0, weight=1)
         self.loading_screen_frame.grid_columnconfigure(0, weight=1)
         self.animation_gif_whole = Image.open("./assets/loading_screen_animation.gif")
@@ -291,7 +334,7 @@ class App(ctk.CTk):
         self.first_file = ctk.CTkFrame(self.main_content, corner_radius=10)
         self.first_file.grid_rowconfigure(12, weight=1)
         self.first_file.grid_columnconfigure(0, weight=1)
-        self.first_file.grid(row=0, column=0, padx=6, pady=6, sticky="news")
+        self.first_file.grid(row=0, column=0, sticky="news")
         self.first_file_label = ctk.CTkLabel(
             self.first_file,
             text="Train Datasets",
