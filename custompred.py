@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 
 
 class CustomTrainPredict:
@@ -112,6 +112,9 @@ class CustomTrainPredict:
 
         self.y_test = self.epochs_test.events[:, 2]
         self.acc = accuracy_score(self.y_test, self.y_pred)
+        self.report = classification_report(
+            self.y_test, self.y_pred, target_names=self.event_id.keys()
+        )
         return (
             self.train_data.info,
             self.test_data.info,
@@ -120,6 +123,7 @@ class CustomTrainPredict:
             self.max_features_,
             self.random_state_,
             self.acc,
+            self.report,
         )
 
         # plt.show()

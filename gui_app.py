@@ -230,30 +230,25 @@ class App(ctk.CTk):
             frames.seek(i)
         return result
 
-    def reset_result(self):
-        self.first_result_button.configure(
-            height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
-        )
-        self.second_result_button.configure(
-            height=29, fg_color=["#3a7ebf", "#1f538d"], bg_color="transparent"
-        )
-        self.first_result_frame.grid_forget()
-        self.second_result_frame.grid_forget()
+    def result_screen(self):
+        # container
+        self.result_tab_view = ctk.CTkTabview(self.main_content)
+        self.result_tab_view.grid(row=0, column=0, sticky="news")
+        self.result_tab_view.add("Summary")
+        self.result_tab_view.add("Classification Report")
+        self.result_tab_view.set("Summary")
 
-    def first_result_screen(self):
-        self.reset_result()
-        self.first_result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
-        self.first_result_frame.rowconfigure(7, weight=1)
-        self.first_result_frame.columnconfigure(0, weight=1)
-        self.first_result_button.configure(height=30, fg_color=["gray85", "gray16"])
+        # first result screen
+        self.result_tab_view.tab("Summary").grid_rowconfigure(7, weight=1)
+        self.result_tab_view.tab("Summary").grid_columnconfigure(0, weight=1)
         self.first_result_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Summary",
             font=ctk.CTkFont(size=30, weight="bold"),
         )
         self.first_result_label.grid(row=1, column=0, padx=10, pady=10, sticky="nw")
         self.train_result_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Train dataset:",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
@@ -261,7 +256,7 @@ class App(ctk.CTk):
             row=2, column=0, padx=(10, 5), pady=10, sticky="nw"
         )
         self.train_result_info = ctk.CTkTextbox(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             fg_color=["gray85", "gray16"],
             font=ctk.CTkFont(size=18),
             width=400,
@@ -269,7 +264,7 @@ class App(ctk.CTk):
         )
         self.train_result_info.grid(row=3, column=0, padx=(10, 5), sticky="nw")
         self.test_result_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Test dataset:",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
@@ -277,7 +272,7 @@ class App(ctk.CTk):
             row=2, column=0, padx=(5, 280), pady=10, sticky="ne"
         )
         self.test_result_info = ctk.CTkTextbox(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             fg_color=["gray85", "gray16"],
             font=ctk.CTkFont(size=18),
             width=400,
@@ -285,18 +280,18 @@ class App(ctk.CTk):
         )
         self.test_result_info.grid(row=3, column=0, padx=(5, 10), sticky="ne")
         self.infos_separator = ctk.CTkFrame(
-            self.first_result_frame, fg_color="#181818", height=240, width=2
+            self.result_tab_view.tab("Summary"), fg_color="#181818", height=240, width=2
         )
         self.infos_separator.grid(row=3, column=0, sticky="n")
         self.result_config_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Algorithm config:",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
         self.result_config_label.grid(row=4, column=0, padx=(5, 10), sticky="nw")
 
         self.result_n_estimators_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="n_estimators:",
             font=ctk.CTkFont(size=18, weight="bold"),
         )
@@ -304,7 +299,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(5, 10), pady=10, sticky="nw"
         )
         self.result_n_estimators_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=18),
             width=50,
             fg_color=["gray85", "gray16"],
@@ -314,7 +309,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(130, 10), pady=10, sticky="nw"
         )
         self.result_min_samples_leaf_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="min_samples_leaf:",
             font=ctk.CTkFont(size=18, weight="bold"),
         )
@@ -322,7 +317,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(200, 10), pady=10, sticky="nw"
         )
         self.result_min_samples_leaf_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=18),
             width=50,
             fg_color=["gray85", "gray16"],
@@ -332,13 +327,13 @@ class App(ctk.CTk):
             row=5, column=0, padx=(370, 10), pady=10, sticky="nw"
         )
         self.result_max_features_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="max_features:",
             font=ctk.CTkFont(size=18, weight="bold"),
         )
         self.result_max_features_label.grid(row=5, column=0, pady=10, sticky="n")
         self.result_max_features_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=18),
             width=60,
             fg_color=["gray85", "gray16"],
@@ -348,7 +343,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(210, 10), pady=10, sticky="n"
         )
         self.result_random_state_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="random_state:",
             font=ctk.CTkFont(size=18, weight="bold"),
         )
@@ -356,7 +351,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(430, 10), pady=10, sticky="n"
         )
         self.result_random_state_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=18),
             width=200,
             fg_color=["gray85", "gray16"],
@@ -366,7 +361,7 @@ class App(ctk.CTk):
             row=5, column=0, padx=(770, 10), pady=10, sticky="n"
         )
         self.result_accuracy_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Accuracy:",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
@@ -374,7 +369,7 @@ class App(ctk.CTk):
             row=6, column=0, padx=(5, 10), pady=10, sticky="nw"
         )
         self.result_accuracy_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=20),
             width=400,
             fg_color=["gray85", "gray16"],
@@ -384,7 +379,7 @@ class App(ctk.CTk):
             row=6, column=0, padx=(100, 10), pady=10, sticky="nw"
         )
         self.result_total_time_label = ctk.CTkLabel(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             text="Total Time:",
             font=ctk.CTkFont(size=20, weight="bold"),
         )
@@ -392,7 +387,7 @@ class App(ctk.CTk):
             row=7, column=0, padx=(5, 10), pady=10, sticky="nw"
         )
         self.result_total_time_value = ctk.CTkEntry(
-            self.first_result_frame,
+            self.result_tab_view.tab("Summary"),
             font=ctk.CTkFont(size=20),
             width=400,
             fg_color=["gray85", "gray16"],
@@ -401,52 +396,18 @@ class App(ctk.CTk):
         self.result_total_time_value.grid(
             row=7, column=0, padx=(115, 10), pady=10, sticky="nw"
         )
-        ###
-        self.train_result_info.insert("0.0", str(self.tr)[27:-1])
-        self.test_result_info.insert("0.0", str(self.ts)[27:-1])
-        self.result_n_estimators_value.insert(0, self.n_est)
-        self.result_min_samples_leaf_value.insert(0, self.min_sampl)
-        self.result_max_features_value.insert(0, self.max_feat)
-        self.result_random_state_value.insert(0, self.rand_st)
-        self.result_accuracy_value.insert(0, round(self.accuracy, 2))
-        self.result_total_time_value.insert(0, round(self.total_time, 2))
 
-        self.result_total_time_value.configure(state="disabled")
-        self.result_accuracy_value.configure(state="disabled")
-        self.result_random_state_value.configure(state="disabled")
-        self.result_max_features_value.configure(state="disabled")
-        self.result_min_samples_leaf_value.configure(state="disabled")
-        self.result_n_estimators_value.configure(state="disabled")
-        self.train_result_info.configure(state="disabled")
-        self.test_result_info.configure(state="disabled")
-
-    def second_result_screen(self):
-        self.reset_result()
-        self.second_result_frame.grid(row=0, column=0, pady=(28, 0), sticky="news")
-        self.second_result_button.configure(height=30, fg_color=["gray85", "gray16"])
-        self.f2_placeholder = ctk.CTkLabel(self.second_result_frame, text="f2")
-        self.f2_placeholder.grid(row=0, column=0, sticky="news")
-
-    def result_screen(self):
-        self.first_result_frame = ctk.CTkFrame(self.main_content, corner_radius=0)
-        self.second_result_frame = ctk.CTkFrame(self.main_content, corner_radius=0)
-        self.first_result_button = ctk.CTkButton(
-            self.main_content,
-            corner_radius=0,
-            hover_color="#282828",
-            text="Summary",
-            command=self.first_result_screen,
+        # second result screen
+        self.result_tab_view.tab("Classification Report").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Classification Report").grid_columnconfigure(
+            0, weight=1
         )
-        self.first_result_button.grid(row=0, column=0, sticky="nw")
-
-        self.second_result_button = ctk.CTkButton(
-            self.main_content,
-            corner_radius=0,
-            hover_color="#282828",
-            text="f2",
-            command=self.second_result_screen,
+        self.classification_report_textbox = ctk.CTkTextbox(
+            self.result_tab_view.tab("Classification Report"),
+            fg_color=["gray85", "gray16"],
+            font=ctk.CTkFont(size=40),
         )
-        self.second_result_button.grid(row=0, column=0, padx=(145, 0), sticky="nw")
+        self.classification_report_textbox.grid(row=0, column=0, sticky="news")
 
         self.clf = CustomTrainPredict(
             train_raw_data_path="./datasets/recordings/SN001.edf",
@@ -467,10 +428,32 @@ class App(ctk.CTk):
             self.max_feat,
             self.rand_st,
             self.accuracy,
+            self.rep,
         ) = self.clf.predict()
         self.stop_pred = time.time()
         self.total_time = self.stop_pred - self.start_pred
-        self.first_result_screen()
+
+        # test setters
+        ###
+        self.train_result_info.insert("0.0", str(self.tr)[27:-1])
+        self.test_result_info.insert("0.0", str(self.ts)[27:-1])
+        self.result_n_estimators_value.insert(0, self.n_est)
+        self.result_min_samples_leaf_value.insert(0, self.min_sampl)
+        self.result_max_features_value.insert(0, self.max_feat)
+        self.result_random_state_value.insert(0, self.rand_st)
+        self.result_accuracy_value.insert(0, round(self.accuracy, 2))
+        self.result_total_time_value.insert(0, round(self.total_time, 2))
+        self.classification_report_textbox.insert("0.0", self.rep)
+
+        self.classification_report_textbox.configure(state="disabled")
+        self.result_total_time_value.configure(state="disabled")
+        self.result_accuracy_value.configure(state="disabled")
+        self.result_random_state_value.configure(state="disabled")
+        self.result_max_features_value.configure(state="disabled")
+        self.result_min_samples_leaf_value.configure(state="disabled")
+        self.result_n_estimators_value.configure(state="disabled")
+        self.train_result_info.configure(state="disabled")
+        self.test_result_info.configure(state="disabled")
 
     def loading_screen(self):
         self.first_file.grid_forget()
