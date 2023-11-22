@@ -3,12 +3,15 @@ import sys
 import customtkinter as ctk
 import tkinter as tk
 import time
+import matplotlib.pyplot as plt
 from tkinter import ttk
 from customtkinter import filedialog
 from PIL import Image
 from custompred import CustomTrainPredict
 from io import StringIO
 from threading import Thread
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")
@@ -47,7 +50,7 @@ class App(ctk.CTk):
         self.custom_pred_button = ctk.CTkButton(
             self.side_menu,
             text="Custom Train Prediction",
-            command=self.result_screen,
+            command=self.custom_train_prediction_screen,
             font=ctk.CTkFont(size=15, weight="bold"),
             border_spacing=10,
         )
@@ -155,7 +158,7 @@ class App(ctk.CTk):
 
     def make_custom_train_prediction(self):
         if self.max_features_optionmenu.get() == "None":
-            clf = CustomTrainPredict(
+            self.clf = CustomTrainPredict(
                 train_raw_data_path=self.train_edf_file.get(),
                 train_annotations_path=self.train_annotation_file.get(),
                 test_raw_data_path=self.test_edf_file.get(),
@@ -166,7 +169,7 @@ class App(ctk.CTk):
                 random_state=int(self.random_state_value.get()),
             )
         else:
-            clf = CustomTrainPredict(
+            self.clf = CustomTrainPredict(
                 train_raw_data_path=self.train_edf_file.get(),
                 train_annotations_path=self.train_annotation_file.get(),
                 test_raw_data_path=self.test_edf_file.get(),
@@ -181,7 +184,21 @@ class App(ctk.CTk):
         sys.stdout = my_stdout = StringIO()
         self.after(1, lambda: self.console_output_textbox_insert(my_stdout, "0.0"))
         self.after(1, lambda: self.loading_screen_gif_update(0))
-        clf.predict()
+        self.start_pred = time.time()
+        (
+            self.tr,
+            self.ts,
+            self.n_est,
+            self.min_sampl,
+            self.max_feat,
+            self.rand_st,
+            self.accuracy,
+            self.rep,
+            self.train_fig,
+            self.test_fig,
+        ) = self.clf.predict()
+        self.stop_pred = time.time()
+        self.total_time = self.stop_pred - self.start_pred
 
         sys.stdout = old_stdout
 
@@ -212,6 +229,8 @@ class App(ctk.CTk):
         self.loading_animation.configure(image=self.animation_gif_frames[i])
         if self.t.is_alive():
             self.after(50, lambda: self.loading_screen_gif_update(i + 1))
+        else:
+            self.result_screen()
 
     def start_make_custom_train_prediction(self):
         if self.custom_train_prediction_validation():
@@ -231,10 +250,38 @@ class App(ctk.CTk):
         return result
 
     def result_screen(self):
+        self.loading_screen_frame.grid_forget()
+        # self.clf = CustomTrainPredict(
+        #     train_raw_data_path="./datasets/recordings/SN001.edf",
+        #     train_annotations_path="./datasets/recordings/SN001_sleepscoring.edf",
+        #     test_raw_data_path="./datasets/recordings/SN002.edf",
+        #     test_annotations_path="./datasets/recordings/SN002_sleepscoring.edf",
+        #     n_estimators=100,
+        #     min_samples_leaf=1,
+        #     max_features="sqrt",
+        #     random_state=42,
+        # )
+        # self.start_pred = time.time()
+        # (
+        #     self.tr,
+        #     self.ts,
+        #     self.n_est,
+        #     self.min_sampl,
+        #     self.max_feat,
+        #     self.rand_st,
+        #     self.accuracy,
+        #     self.rep,
+        #     self.train_fig,
+        #     self.test_fig,
+        # ) = self.clf.predict()
+        # self.stop_pred = time.time()
+        # self.total_time = self.stop_pred - self.start_pred
         # container
         self.result_tab_view = ctk.CTkTabview(self.main_content)
         self.result_tab_view.grid(row=0, column=0, sticky="news")
         self.result_tab_view.add("Summary")
+        self.result_tab_view.add("Train Dataset Plot")
+        self.result_tab_view.add("Test Dataset Plot")
         self.result_tab_view.add("Classification Report")
         self.result_tab_view.set("Summary")
 
@@ -397,44 +444,95 @@ class App(ctk.CTk):
             row=7, column=0, padx=(115, 10), pady=10, sticky="nw"
         )
 
+        self.result_tab_view.tab("Train Dataset Plot").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Train Dataset Plot").grid_columnconfigure(0, weight=1)
+        self.result_train_plot = FigureCanvasTkAgg(
+            self.train_fig, self.result_tab_view.tab("Train Dataset Plot")
+        )
+        self.result_train_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.result_tab_view.tab("Test Dataset Plot").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Test Dataset Plot").grid_columnconfigure(0, weight=1)
+        self.result_test_plot = FigureCanvasTkAgg(
+            self.test_fig, self.result_tab_view.tab("Test Dataset Plot")
+        )
+        self.result_test_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
         # second result screen
         self.result_tab_view.tab("Classification Report").grid_rowconfigure(0, weight=1)
         self.result_tab_view.tab("Classification Report").grid_columnconfigure(
             0, weight=1
         )
-        self.classification_report_textbox = ctk.CTkTextbox(
+        self.report_table_style = ttk.Style()
+        self.report_table_style.theme_use("classic")
+        self.report_table_style.configure(
+            "Treeview",
+            background="gray16",
+            foreground="white",
+            fieldbackground="gray16",
+            bordercolor="gray16",
+            borderwidth=0,
+            font=ctk.CTkFont(size=12),
+            highlightthickness=0,
+            rowheight=50,
+        )
+        self.report_table_style.configure(
+            "Treeview.Heading",
+            font=(ctk.CTkFont(), 15, "bold"),
+            relief="none",
+            background="#1f538d",
+            fieldbackground="#1f538d",
+            foreground="white",
+            highlightthickness=0,
+        )
+        self.classification_report_table = ttk.Treeview(
             self.result_tab_view.tab("Classification Report"),
-            fg_color=["gray85", "gray16"],
-            font=ctk.CTkFont(size=40),
+            columns=["empty", "precision", "recall", "f1-score", "support"],
+            show="headings",
+            height=7,
+            padding=(0, 10, 0, 0),
         )
-        self.classification_report_textbox.grid(row=0, column=0, sticky="news")
-
-        self.clf = CustomTrainPredict(
-            train_raw_data_path="./datasets/recordings/SN001.edf",
-            train_annotations_path="./datasets/recordings/SN001_sleepscoring.edf",
-            test_raw_data_path="./datasets/recordings/SN002.edf",
-            test_annotations_path="./datasets/recordings/SN002_sleepscoring.edf",
-            n_estimators=100,
-            min_samples_leaf=1,
-            max_features="sqrt",
-            random_state=42,
+        self.classification_report_table.tag_configure("different", background="gray25")
+        self.classification_report_table.grid(row=0, column=0, sticky="new")
+        self.classification_report_table.heading("empty", text="")
+        self.classification_report_table.column(
+            "empty",
+            anchor="center",
         )
-        self.start_pred = time.time()
-        (
-            self.tr,
-            self.ts,
-            self.n_est,
-            self.min_sampl,
-            self.max_feat,
-            self.rand_st,
-            self.accuracy,
-            self.rep,
-        ) = self.clf.predict()
-        self.stop_pred = time.time()
-        self.total_time = self.stop_pred - self.start_pred
+        self.classification_report_table.heading(
+            "precision", text="Precision", anchor="center"
+        )
+        self.classification_report_table.column("precision", anchor="center")
+        self.classification_report_table.heading("recall", text="Recall")
+        self.classification_report_table.column("recall", anchor="center")
+        self.classification_report_table.heading("f1-score", text="F1-score")
+        self.classification_report_table.column("f1-score", anchor="center")
+        self.classification_report_table.heading("support", text="Support")
+        self.classification_report_table.column("support", anchor="center")
 
-        # test setters
-        ###
+        self.fill_result_screen()
+
+    def fill_result_screen(self):
+        self.rep.pop("accuracy")
+        self.x = 1
+        for key in self.rep:
+            row = [
+                key,
+                self.rep[key]["precision"],
+                self.rep[key]["recall"],
+                self.rep[key]["f1-score"],
+                self.rep[key]["support"],
+            ]
+            if self.x % 2 == 0:
+                self.classification_report_table.insert(
+                    parent="", index="end", values=row
+                )
+            else:
+                self.classification_report_table.insert(
+                    parent="", index="end", values=row, tag="different"
+                )
+            self.x += 1
+
         self.train_result_info.insert("0.0", str(self.tr)[27:-1])
         self.test_result_info.insert("0.0", str(self.ts)[27:-1])
         self.result_n_estimators_value.insert(0, self.n_est)
@@ -443,9 +541,7 @@ class App(ctk.CTk):
         self.result_random_state_value.insert(0, self.rand_st)
         self.result_accuracy_value.insert(0, round(self.accuracy, 2))
         self.result_total_time_value.insert(0, round(self.total_time, 2))
-        self.classification_report_textbox.insert("0.0", self.rep)
 
-        self.classification_report_textbox.configure(state="disabled")
         self.result_total_time_value.configure(state="disabled")
         self.result_accuracy_value.configure(state="disabled")
         self.result_random_state_value.configure(state="disabled")

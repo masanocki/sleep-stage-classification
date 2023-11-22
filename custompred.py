@@ -39,11 +39,12 @@ class CustomTrainPredict:
 
         self.train_data.set_annotations(self.annot_train)
 
-        # # data.plot(
-        # #     start=60,
-        # #     duration=60,
-        # #     scalings=dict(eeg=1e-4, resp=1e3, eog=1e-4, emg=1e-7, misc=1e-1),
-        # # )
+        self.train_fig = self.train_data.plot(
+            start=60,
+            duration=60,
+            scalings=dict(eeg=1e-4, resp=1e3, eog=1e-4, emg=1e-7, misc=1e-1),
+        )
+        plt.close(self.train_fig)
 
         self.event_id = {
             "Sleep stage W": 1,
@@ -83,6 +84,12 @@ class CustomTrainPredict:
 
         self.annot_test = mne.read_annotations(self.test_annotations_path_)
         self.test_data.set_annotations(self.annot_test)
+        self.test_fig = self.test_data.plot(
+            start=60,
+            duration=60,
+            scalings=dict(eeg=1e-4, resp=1e3, eog=1e-4, emg=1e-7, misc=1e-1),
+        )
+        plt.close(self.test_fig)
         self.events_test, _ = mne.events_from_annotations(
             self.test_data, event_id=self.event_id, chunk_duration=30.0
         )
@@ -113,7 +120,10 @@ class CustomTrainPredict:
         self.y_test = self.epochs_test.events[:, 2]
         self.acc = accuracy_score(self.y_test, self.y_pred)
         self.report = classification_report(
-            self.y_test, self.y_pred, target_names=self.event_id.keys()
+            self.y_test,
+            self.y_pred,
+            target_names=self.event_id.keys(),
+            output_dict=True,
         )
         return (
             self.train_data.info,
@@ -124,6 +134,8 @@ class CustomTrainPredict:
             self.random_state_,
             self.acc,
             self.report,
+            self.train_fig,
+            self.test_fig,
         )
 
         # plt.show()
