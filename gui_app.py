@@ -196,6 +196,10 @@ class App(ctk.CTk):
             self.rep,
             self.train_fig,
             self.test_fig,
+            self.conf_matrix,
+            self.train_events_fig,
+            self.test_events_fig,
+            self.predicted_events_fig,
         ) = self.clf.predict()
         self.stop_pred = time.time()
         self.total_time = self.stop_pred - self.start_pred
@@ -281,8 +285,12 @@ class App(ctk.CTk):
         self.result_tab_view.grid(row=0, column=0, sticky="news")
         self.result_tab_view.add("Summary")
         self.result_tab_view.add("Train Dataset Plot")
+        self.result_tab_view.add("Train Events Plot")
         self.result_tab_view.add("Test Dataset Plot")
+        self.result_tab_view.add("Test Events Plot")
         self.result_tab_view.add("Classification Report")
+        self.result_tab_view.add("Confusion Matrix")
+        self.result_tab_view.add("Predicted Events Plot")
         self.result_tab_view.set("Summary")
 
         # first result screen
@@ -451,12 +459,30 @@ class App(ctk.CTk):
         )
         self.result_train_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
 
+        self.result_tab_view.tab("Train Events Plot").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Train Events Plot").grid_columnconfigure(0, weight=1)
+        self.result_train_events_plot = FigureCanvasTkAgg(
+            self.train_events_fig, self.result_tab_view.tab("Train Events Plot")
+        )
+        self.result_train_events_plot.get_tk_widget().grid(
+            row=0, column=0, sticky="news"
+        )
+
         self.result_tab_view.tab("Test Dataset Plot").grid_rowconfigure(0, weight=1)
         self.result_tab_view.tab("Test Dataset Plot").grid_columnconfigure(0, weight=1)
         self.result_test_plot = FigureCanvasTkAgg(
             self.test_fig, self.result_tab_view.tab("Test Dataset Plot")
         )
         self.result_test_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.result_tab_view.tab("Test Events Plot").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Test Events Plot").grid_columnconfigure(0, weight=1)
+        self.result_test_events_plot = FigureCanvasTkAgg(
+            self.test_events_fig, self.result_tab_view.tab("Test Events Plot")
+        )
+        self.result_test_events_plot.get_tk_widget().grid(
+            row=0, column=0, sticky="news"
+        )
 
         # second result screen
         self.result_tab_view.tab("Classification Report").grid_rowconfigure(0, weight=1)
@@ -509,6 +535,26 @@ class App(ctk.CTk):
         self.classification_report_table.column("f1-score", anchor="center")
         self.classification_report_table.heading("support", text="Support")
         self.classification_report_table.column("support", anchor="center")
+
+        self.result_tab_view.tab("Confusion Matrix").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Confusion Matrix").grid_columnconfigure(0, weight=1)
+        self.result_confusion_matrix_plot = FigureCanvasTkAgg(
+            self.conf_matrix, self.result_tab_view.tab("Confusion Matrix")
+        )
+        self.result_confusion_matrix_plot.get_tk_widget().grid(
+            row=0, column=0, sticky="news"
+        )
+
+        self.result_tab_view.tab("Predicted Events Plot").grid_rowconfigure(0, weight=1)
+        self.result_tab_view.tab("Predicted Events Plot").grid_columnconfigure(
+            0, weight=1
+        )
+        self.result_predicted_events_plot = FigureCanvasTkAgg(
+            self.predicted_events_fig, self.result_tab_view.tab("Predicted Events Plot")
+        )
+        self.result_predicted_events_plot.get_tk_widget().grid(
+            row=0, column=0, sticky="news"
+        )
 
         self.fill_result_screen()
 
