@@ -662,6 +662,20 @@ class App(ctk.CTk):
         self.pred_annotation_file.delete(0, "end")
         self.pred_annotation_file.insert(0, filePath)
 
+    def sleep_stage_entry_validation(self):
+        flag = True
+        if self.pred_edf_file.get() == "":
+            self.pred_edf_file.configure(fg_color="#ff0033")
+            flag = False
+        if self.pred_annotation_file.get() == "":
+            self.pred_annotation_file.configure(fg_color="#ff0033")
+            flag = False
+        return flag
+
+    def start_sleep_stage_prediction(self):
+        if self.sleep_stage_entry_validation():
+            print("elo")
+
     def predict_screen(self):
         self.reset_menu_buttons()
         self.pred_button.configure(fg_color="#282828", hover_color="#282828")
@@ -731,7 +745,7 @@ class App(ctk.CTk):
             text="Start Sleep Stage Prediction",
             font=ctk.CTkFont(size=15, weight="bold"),
             border_spacing=20,
-            # command=self.pred_annotation_file_insert,
+            command=self.start_sleep_stage_prediction,
         )
         self.start_prediction_button.grid(row=0, column=0, pady=(0, 40), sticky="s")
 
