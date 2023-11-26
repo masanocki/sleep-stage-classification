@@ -47,14 +47,34 @@ class App(ctk.CTk):
             text="",
         )
         self.menu_title.grid(row=0, column=0, padx=30, pady=(30, 60))
+        self.start_button = ctk.CTkButton(
+            self.side_menu,
+            text="Start",
+            command=self.start_screen,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            border_spacing=10,
+            width=220,
+        )
+        self.start_button.grid(row=1, column=0, padx=20, pady=10)
+        self.start_button.configure(fg_color="#282828", hover_color="#282828")
+        self.pred_button = ctk.CTkButton(
+            self.side_menu,
+            text="Predict",
+            command=self.predict_screen,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            border_spacing=10,
+            width=220,
+        )
+        self.pred_button.grid(row=2, column=0, padx=20, pady=10)
         self.custom_pred_button = ctk.CTkButton(
             self.side_menu,
             text="Custom Train Prediction",
             command=self.custom_train_prediction_screen,
             font=ctk.CTkFont(size=15, weight="bold"),
             border_spacing=10,
+            width=220,
         )
-        self.custom_pred_button.grid(row=1, column=0, padx=20, pady=10)
+        self.custom_pred_button.grid(row=3, column=0, padx=20, pady=10)
         self.theme_mode_label = ctk.CTkLabel(
             self.side_menu,
             text="Change Theme:",
@@ -71,17 +91,7 @@ class App(ctk.CTk):
         self.theme_mode_options.set(ctk.get_appearance_mode())
         self.theme_mode_options.grid(row=7, column=0, padx=20, pady=10)
 
-        # main content
-        self.main_content = ctk.CTkFrame(self, corner_radius=10)
-        self.main_content.grid(
-            row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
-        )
-        self.main_content.grid_rowconfigure(0, weight=1)
-        self.main_content.grid_columnconfigure(0, weight=1)
-        self.placeholder_content = ctk.CTkLabel(
-            self.main_content, text="HAHAHA", font=ctk.CTkFont(size=20, weight="bold")
-        )
-        self.placeholder_content.grid(row=0, column=0, padx=20, pady=20, sticky="news")
+        self.start_screen()
 
         self.credentials_label = ctk.CTkLabel(
             self.side_menu,
@@ -93,8 +103,20 @@ class App(ctk.CTk):
     def theme_mode(self, new_theme_mode):
         ctk.set_appearance_mode(new_theme_mode)
 
-    def back_to_start(self):
-        self.start()
+    def start_screen(self):
+        self.reset_menu_buttons()
+        self.start_button.configure(fg_color="#282828", hover_color="#282828")
+        # main content
+        self.main_content = ctk.CTkFrame(self, corner_radius=10)
+        self.main_content.grid(
+            row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
+        )
+        self.main_content.grid_rowconfigure(0, weight=1)
+        self.main_content.grid_columnconfigure(0, weight=1)
+        self.placeholder_content = ctk.CTkLabel(
+            self.main_content, text="HAHAHA", font=ctk.CTkFont(size=20, weight="bold")
+        )
+        self.placeholder_content.grid(row=0, column=0, padx=20, pady=20, sticky="news")
 
     def train_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
@@ -255,32 +277,6 @@ class App(ctk.CTk):
 
     def result_screen(self):
         self.loading_screen_frame.grid_forget()
-        # self.clf = CustomTrainPredict(
-        #     train_raw_data_path="./datasets/recordings/SN001.edf",
-        #     train_annotations_path="./datasets/recordings/SN001_sleepscoring.edf",
-        #     test_raw_data_path="./datasets/recordings/SN002.edf",
-        #     test_annotations_path="./datasets/recordings/SN002_sleepscoring.edf",
-        #     n_estimators=100,
-        #     min_samples_leaf=1,
-        #     max_features="sqrt",
-        #     random_state=42,
-        # )
-        # self.start_pred = time.time()
-        # (
-        #     self.tr,
-        #     self.ts,
-        #     self.n_est,
-        #     self.min_sampl,
-        #     self.max_feat,
-        #     self.rand_st,
-        #     self.accuracy,
-        #     self.rep,
-        #     self.train_fig,
-        #     self.test_fig,
-        # ) = self.clf.predict()
-        # self.stop_pred = time.time()
-        # self.total_time = self.stop_pred - self.start_pred
-        # container
         self.result_tab_view = ctk.CTkTabview(self.main_content)
         self.result_tab_view.grid(row=0, column=0, sticky="news")
         self.result_tab_view.add("Summary")
@@ -643,19 +639,107 @@ class App(ctk.CTk):
             flag = False
         return flag
 
+    def reset_menu_buttons(self):
+        self.custom_pred_button.configure(
+            fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
+        )
+        self.pred_button.configure(
+            fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
+        )
+        self.start_button.configure(
+            fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
+        )
+
+    def pred_edf_file_insert(self):
+        filePath = filedialog.askopenfilename()
+        self.pred_edf_file.configure(fg_color="#343638")
+        self.pred_edf_file.delete(0, "end")
+        self.pred_edf_file.insert(0, filePath)
+
+    def pred_annotation_file_insert(self):
+        filePath = filedialog.askopenfilename()
+        self.pred_annotation_file.configure(fg_color="#343638")
+        self.pred_annotation_file.delete(0, "end")
+        self.pred_annotation_file.insert(0, filePath)
+
+    def predict_screen(self):
+        self.reset_menu_buttons()
+        self.pred_button.configure(fg_color="#282828", hover_color="#282828")
+        self.predict_screen_frame = ctk.CTkFrame(self.main_content, corner_radius=10)
+        self.predict_screen_frame.grid(row=0, column=0, sticky="news")
+        self.predict_screen_frame.grid_rowconfigure(0, weight=1)
+        self.predict_screen_frame.grid_columnconfigure(0, weight=1)
+        self.pred_upload_file_frame = ctk.CTkFrame(
+            self.predict_screen_frame,
+            corner_radius=10,
+            fg_color=["gray85", "gray16"],
+            border_color="#181818",
+            border_width=2,
+        )
+        self.pred_upload_file_frame.grid(
+            row=0, column=0, padx=40, pady=(20, 80), sticky="news"
+        )
+        self.pred_upload_file_frame.grid_rowconfigure(0, weight=1)
+        self.pred_upload_file_frame.grid_columnconfigure(0, weight=1)
+        upload_image = ctk.CTkImage(
+            light_image=Image.open("./assets/upload_icon.png"),
+            dark_image=Image.open("./assets/upload_icon.png"),
+            size=(250, 250),
+        )
+        self.upload_icon_label = ctk.CTkLabel(
+            self.pred_upload_file_frame, image=upload_image, text="", width=250
+        )
+        self.upload_icon_label.grid(row=0, column=0, pady=(30, 0), sticky="new")
+        self.upload_label = ctk.CTkLabel(
+            self.pred_upload_file_frame,
+            text="Upload your PSG data file and annotations to it",
+            font=ctk.CTkFont(size=15),
+        )
+        self.upload_label.grid(row=0, column=0, pady=(0, 60), sticky="ew")
+        self.pred_edf_file = ctk.CTkEntry(
+            self.pred_upload_file_frame, placeholder_text="PSG Raw data", width=700
+        )
+        self.pred_edf_file.grid(row=0, column=0, padx=(35, 0), pady=(30, 0), sticky="w")
+        self.pred_edf_file_button = ctk.CTkButton(
+            self.pred_upload_file_frame,
+            text="Upload",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.pred_edf_file_insert,
+        )
+        self.pred_edf_file_button.grid(
+            row=0, column=0, padx=(0, 35), pady=(30, 0), sticky="e"
+        )
+        self.pred_annotation_file = ctk.CTkEntry(
+            self.pred_upload_file_frame,
+            placeholder_text="Data for Annotations",
+            width=700,
+        )
+        self.pred_annotation_file.grid(
+            row=0, column=0, padx=(35, 0), pady=(140, 0), sticky="w"
+        )
+        self.pred_annotation_button = ctk.CTkButton(
+            self.pred_upload_file_frame,
+            text="Upload",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            command=self.pred_annotation_file_insert,
+        )
+        self.pred_annotation_button.grid(
+            row=0, column=0, padx=(0, 35), pady=(140, 0), sticky="e"
+        )
+        self.start_prediction_button = ctk.CTkButton(
+            self.pred_upload_file_frame,
+            text="Start Sleep Stage Prediction",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            border_spacing=20,
+            # command=self.pred_annotation_file_insert,
+        )
+        self.start_prediction_button.grid(row=0, column=0, pady=(0, 40), sticky="s")
+
     def custom_train_prediction_screen(self):
-        self.placeholder_content.destroy()
+        self.reset_menu_buttons()
+        self.custom_pred_button.configure(fg_color="#282828", hover_color="#282828")
         self.main_content.grid_rowconfigure(0, weight=1)
         self.main_content.grid_columnconfigure(0, weight=1)
-        self.custom_pred_button.configure(fg_color="#282828")
-
-        self.custom_pred_back_to_start_button = ctk.CTkButton(
-            self.side_menu,
-            text="Back to Start",
-            command=self.back_to_start,
-            font=ctk.CTkFont(weight="bold"),
-        )
-        self.custom_pred_back_to_start_button.grid(row=5, column=0, padx=20, pady=10)
 
         self.first_file = ctk.CTkFrame(self.main_content, corner_radius=10)
         self.first_file.grid_rowconfigure(12, weight=1)
