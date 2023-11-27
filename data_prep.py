@@ -1,5 +1,6 @@
 import mne
 import numpy as np
+from mne.time_frequency import psd_array_welch
 
 
 # data_type is for selecting how do you want to load data:
