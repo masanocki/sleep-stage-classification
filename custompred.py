@@ -133,6 +133,7 @@ class CustomTrainPredict:
             self.y_pred,
             target_names=self.event_id.keys(),
             output_dict=True,
+            zero_division=1,
         )
 
         self.confusion_matrix = confusion_matrix(
@@ -151,7 +152,13 @@ class CustomTrainPredict:
             ],
         ).plot()
 
-        # create array of events based on predicted labels
+        self.valid_event_ids = set(np.unique(self.y_pred))
+        self.event_id = {
+            key: value
+            for key, value in self.event_id.items()
+            if value in self.valid_event_ids
+        }
+
         self.predicted_events = np.column_stack(
             (self.events_test[:, 0], np.zeros_like(self.y_pred), self.y_pred)
         )

@@ -8,6 +8,7 @@ from tkinter import ttk
 from customtkinter import filedialog
 from PIL import Image
 from custompred import CustomTrainPredict
+from pretrained_pred import PretrainedPred
 from io import StringIO
 from threading import Thread
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -28,6 +29,8 @@ class App(ctk.CTk):
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure((0, 1, 2), weight=1)
         self.start()
+        self.animation_gif_whole = Image.open("./assets/loading_screen_animation.gif")
+        self.animation_gif_frames = self.create_gif(self.animation_gif_whole, 97)
 
     def start(self):
         # side menu
@@ -579,7 +582,10 @@ class App(ctk.CTk):
         self.test_result_info.insert("0.0", str(self.ts)[27:-1])
         self.result_n_estimators_value.insert(0, self.n_est)
         self.result_min_samples_leaf_value.insert(0, self.min_sampl)
-        self.result_max_features_value.insert(0, self.max_feat)
+        if self.max_feat == None:
+            self.result_max_features_value.insert(0, "None")
+        else:
+            self.result_max_features_value.insert(0, self.max_feat)
         self.result_random_state_value.insert(0, self.rand_st)
         self.result_accuracy_value.insert(0, round(self.accuracy, 2))
         self.result_total_time_value.insert(0, round(self.total_time, 2))
@@ -599,9 +605,6 @@ class App(ctk.CTk):
         self.loading_screen_frame.grid(row=0, column=0, sticky="news")
         self.loading_screen_frame.grid_rowconfigure(0, weight=1)
         self.loading_screen_frame.grid_columnconfigure(0, weight=1)
-        self.animation_gif_whole = Image.open("./assets/loading_screen_animation.gif")
-
-        self.animation_gif_frames = self.create_gif(self.animation_gif_whole, 97)
 
         self.loading_animation = ctk.CTkLabel(
             self.loading_screen_frame, text="", image=self.animation_gif_frames[2]
@@ -667,14 +670,252 @@ class App(ctk.CTk):
         if self.pred_edf_file.get() == "":
             self.pred_edf_file.configure(fg_color="#ff0033")
             flag = False
-        if self.pred_annotation_file.get() == "":
-            self.pred_annotation_file.configure(fg_color="#ff0033")
-            flag = False
         return flag
+
+    def pred_result_screen(self):
+        self.predict_screen_frame.grid_forget()
+        self.def_pred_result_tab_view = ctk.CTkTabview(self.main_content)
+        self.def_pred_result_tab_view.grid(row=0, column=0, sticky="news")
+        self.def_pred_result_tab_view.add("Predicted Events On EEG Plot")
+        self.def_pred_result_tab_view.add("Predicted Events")
+        self.def_pred_result_tab_view.set("Predicted Events On EEG Plot")
+
+        self.def_pred_result_tab_view.tab(
+            "Predicted Events On EEG Plot"
+        ).grid_rowconfigure(0, weight=1)
+        self.def_pred_result_tab_view.tab(
+            "Predicted Events On EEG Plot"
+        ).grid_columnconfigure(0, weight=1)
+        self.def_pred_plot = FigureCanvasTkAgg(
+            self.pred_plot_fig,
+            self.def_pred_result_tab_view.tab("Predicted Events On EEG Plot"),
+        )
+        self.def_pred_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.def_pred_result_tab_view.tab("Predicted Events").grid_rowconfigure(
+            0, weight=1
+        )
+        self.def_pred_result_tab_view.tab("Predicted Events").grid_columnconfigure(
+            0, weight=1
+        )
+        self.def_pred_events_plot = FigureCanvasTkAgg(
+            self.pred_events_fig,
+            self.def_pred_result_tab_view.tab("Predicted Events"),
+        )
+        self.def_pred_events_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+    def pred_screen_gif_update(self, i):
+        if i > 96:
+            i = 2
+        self.loading_animation.configure(image=self.animation_gif_frames[i])
+        if self.t.is_alive():
+            self.after(50, lambda: self.pred_screen_gif_update(i + 1))
+        else:
+            if self.annotation_flag:
+                self.pred_annotation_result_screen()
+            else:
+                self.pred_result_screen()
+
+    def pred_console_output_textbox_insert(self, my_stdout):
+        self.pred_console_output_textbox.configure(state="normal")
+        self.pred_console_output_textbox.delete("0.0", "end")
+        self.pred_console_output_textbox.insert("end", my_stdout.getvalue())
+        self.pred_console_output_textbox.configure(state="disabled")
+        self.pred_console_output_textbox.see("end")
+        if self.t.is_alive():
+            self.after(
+                1,
+                lambda: self.pred_console_output_textbox_insert(my_stdout),
+            )
+
+    def make_prediction(self):
+        self.loading_animation = ctk.CTkLabel(
+            self.predict_screen_frame, text="", image=self.animation_gif_frames[2]
+        )
+        self.loading_animation.grid(row=0, column=0, pady=(0, 250))
+        self.pred_upload_file_frame.grid_forget()
+        self.pred_loading_progressbar = ctk.CTkProgressBar(
+            self.predict_screen_frame,
+            orientation="horizontal",
+            mode="indeterminate",
+            height=25,
+        )
+        self.pred_loading_progressbar.grid(row=0, column=0, padx=35, sticky="we")
+        self.pred_console_output_textbox = ctk.CTkTextbox(
+            self.predict_screen_frame, height=310, state="disabled"
+        )
+        self.pred_console_output_textbox.grid(
+            row=0, column=0, padx=10, pady=(0, 10), sticky="wes"
+        )
+        self.annotation_flag = True
+        if self.pred_annotation_file.get() == "":
+            self.pretrained_clf = PretrainedPred(
+                test_raw_data_path=self.pred_edf_file.get(),
+                test_annotations_path=None,
+            )
+            self.annotation_flag = False
+        else:
+            self.pretrained_clf = PretrainedPred(
+                test_raw_data_path=self.pred_edf_file.get(),
+                test_annotations_path=self.pred_annotation_file.get(),
+            )
+
+        old_stdout = sys.stdout
+        sys.stdout = my_stdout = StringIO()
+        self.after(1, lambda: self.pred_console_output_textbox_insert(my_stdout))
+        self.after(1, lambda: self.pred_screen_gif_update(0))
+        self.pred_loading_progressbar.start()
+        if self.annotation_flag:
+            (
+                self.pred_acc,
+                self.pred_rep,
+                self.pred_test_fig,
+                self.pred_conf_matrix,
+                self.pred_test_events_fig,
+                self.pred_events_fig,
+            ) = self.pretrained_clf.annot_predict()
+        else:
+            (
+                self.pred_events_fig,
+                self.pred_plot_fig,
+            ) = self.pretrained_clf.default_predict()
+        self.pred_loading_progressbar.stop()
+
+        sys.stdout = old_stdout
 
     def start_sleep_stage_prediction(self):
         if self.sleep_stage_entry_validation():
-            print("elo")
+            self.t = Thread(target=self.make_prediction, daemon=True)
+            self.t.start()
+
+    def fill_annot_result_screen(self):
+        self.pred_rep.pop("accuracy")
+        self.x = 1
+        for key in self.pred_rep:
+            row = [
+                key,
+                self.pred_rep[key]["precision"],
+                self.pred_rep[key]["recall"],
+                self.pred_rep[key]["f1-score"],
+                self.pred_rep[key]["support"],
+            ]
+            if self.x % 2 == 0:
+                self.pred_report_table.insert(parent="", index="end", values=row)
+            else:
+                self.pred_report_table.insert(
+                    parent="", index="end", values=row, tag="different"
+                )
+            self.x += 1
+
+    def pred_annotation_result_screen(self):
+        self.predict_screen_frame.grid_forget()
+        self.pred_result_tab_view = ctk.CTkTabview(self.main_content)
+        self.pred_result_tab_view.grid(row=0, column=0, sticky="news")
+        self.pred_result_tab_view.add("Report")
+        self.pred_result_tab_view.add("Test Dataset Plot")
+        self.pred_result_tab_view.add("Confusion Matrix")
+        self.pred_result_tab_view.add("Test Events Plot")
+        self.pred_result_tab_view.add("Predicted Events Plot")
+        self.pred_result_tab_view.set("Report")
+
+        self.pred_result_tab_view.tab("Report").grid_rowconfigure(0, weight=1)
+        self.pred_result_tab_view.tab("Report").grid_columnconfigure(0, weight=1)
+        self.pred_report_table_style = ttk.Style()
+        self.pred_report_table_style.theme_use("classic")
+        self.pred_report_table_style.configure(
+            "Treeview",
+            background="gray16",
+            foreground="white",
+            fieldbackground="gray16",
+            bordercolor="gray16",
+            borderwidth=0,
+            font=ctk.CTkFont(size=12),
+            highlightthickness=0,
+            rowheight=50,
+        )
+        self.pred_report_table_style.configure(
+            "Treeview.Heading",
+            font=(ctk.CTkFont(), 15, "bold"),
+            relief="none",
+            background="#1f538d",
+            fieldbackground="#1f538d",
+            foreground="white",
+            highlightthickness=0,
+        )
+        self.pred_report_table = ttk.Treeview(
+            self.pred_result_tab_view.tab("Report"),
+            columns=["empty", "precision", "recall", "f1-score", "support"],
+            show="headings",
+            height=7,
+            padding=(0, 10, 0, 0),
+        )
+        self.pred_report_table.tag_configure("different", background="gray25")
+        self.pred_report_table.grid(row=0, column=0, sticky="new")
+        self.pred_report_table.heading("empty", text="")
+        self.pred_report_table.column(
+            "empty",
+            anchor="center",
+        )
+        self.pred_report_table.heading("precision", text="Precision", anchor="center")
+        self.pred_report_table.column("precision", anchor="center")
+        self.pred_report_table.heading("recall", text="Recall")
+        self.pred_report_table.column("recall", anchor="center")
+        self.pred_report_table.heading("f1-score", text="F1-score")
+        self.pred_report_table.column("f1-score", anchor="center")
+        self.pred_report_table.heading("support", text="Support")
+        self.pred_report_table.column("support", anchor="center")
+
+        self.pred_accuracy_label = ctk.CTkLabel(
+            self.pred_result_tab_view.tab("Report"),
+            text=f"Accuracy: {round(self.pred_acc, 2)}",
+            font=ctk.CTkFont(size=20),
+        )
+        self.pred_accuracy_label.grid(row=0, column=0, pady=(140, 0), sticky="w")
+
+        self.pred_result_tab_view.tab("Test Dataset Plot").grid_rowconfigure(
+            0, weight=1
+        )
+        self.pred_result_tab_view.tab("Test Dataset Plot").grid_columnconfigure(
+            0, weight=1
+        )
+        self.pred_test_dataset_plot = FigureCanvasTkAgg(
+            self.pred_test_fig,
+            self.pred_result_tab_view.tab("Test Dataset Plot"),
+        )
+        self.pred_test_dataset_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.pred_result_tab_view.tab("Confusion Matrix").grid_rowconfigure(0, weight=1)
+        self.pred_result_tab_view.tab("Confusion Matrix").grid_columnconfigure(
+            0, weight=1
+        )
+        self.pred_conf_matrix_plot = FigureCanvasTkAgg(
+            self.pred_conf_matrix,
+            self.pred_result_tab_view.tab("Confusion Matrix"),
+        )
+        self.pred_conf_matrix_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.pred_result_tab_view.tab("Test Events Plot").grid_rowconfigure(0, weight=1)
+        self.pred_result_tab_view.tab("Test Events Plot").grid_columnconfigure(
+            0, weight=1
+        )
+        self.pred_test_events_plot = FigureCanvasTkAgg(
+            self.pred_test_events_fig,
+            self.pred_result_tab_view.tab("Test Events Plot"),
+        )
+        self.pred_test_events_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+
+        self.pred_result_tab_view.tab("Predicted Events Plot").grid_rowconfigure(
+            0, weight=1
+        )
+        self.pred_result_tab_view.tab("Predicted Events Plot").grid_columnconfigure(
+            0, weight=1
+        )
+        self.pred_events_plot = FigureCanvasTkAgg(
+            self.pred_events_fig,
+            self.pred_result_tab_view.tab("Predicted Events Plot"),
+        )
+        self.pred_events_plot.get_tk_widget().grid(row=0, column=0, sticky="news")
+        self.fill_annot_result_screen()
 
     def predict_screen(self):
         self.reset_menu_buttons()
@@ -725,7 +966,7 @@ class App(ctk.CTk):
         )
         self.pred_annotation_file = ctk.CTkEntry(
             self.pred_upload_file_frame,
-            placeholder_text="Data for Annotations",
+            placeholder_text="Data for Annotations (optional)",
             width=700,
         )
         self.pred_annotation_file.grid(
@@ -739,6 +980,14 @@ class App(ctk.CTk):
         )
         self.pred_annotation_button.grid(
             row=0, column=0, padx=(0, 35), pady=(140, 0), sticky="e"
+        )
+        self.pred_note_label = ctk.CTkLabel(
+            self.pred_upload_file_frame,
+            text="Please note that if you do not provide the annotations file, it will be automatically generated, and the result screen will contain fewer results",
+            font=ctk.CTkFont(size=11, slant="italic"),
+        )
+        self.pred_note_label.grid(
+            row=0, column=0, padx=(0, 165), pady=(200, 0), sticky="ew"
         )
         self.start_prediction_button = ctk.CTkButton(
             self.pred_upload_file_frame,
