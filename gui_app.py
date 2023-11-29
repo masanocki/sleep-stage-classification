@@ -177,6 +177,7 @@ class App(ctk.CTk):
             + "Start screen star image by Clker-Free-Vector-Images from Pixabay\n\n"
             + "Designed by Maciej Sanocki\n",
         )
+        self.credits_textbox.configure(state='disabled')
 
     def train_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
