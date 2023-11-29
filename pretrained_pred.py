@@ -1,6 +1,5 @@
 import mne
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import data_prep as dp
 from sklearn.metrics import (

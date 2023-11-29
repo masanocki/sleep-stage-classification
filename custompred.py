@@ -1,9 +1,7 @@
 import numpy as np
 import mne
 import matplotlib
-import matplotlib.pyplot as plt
 import data_prep as dp
-import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer

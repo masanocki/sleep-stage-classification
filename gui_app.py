@@ -3,7 +3,6 @@ import sys
 import customtkinter as ctk
 import tkinter as tk
 import time
-import matplotlib.pyplot as plt
 from tkinter import ttk
 from customtkinter import filedialog
 from PIL import Image
@@ -33,12 +32,11 @@ class App(ctk.CTk):
         self.animation_gif_frames = self.create_gif(self.animation_gif_whole, 97)
 
     def start(self):
-        # side menu
         self.side_menu = ctk.CTkFrame(
             self, width=160, corner_radius=10, fg_color="transparent"
         )
         self.side_menu.grid(row=0, column=0, rowspan=4, sticky="news")
-        self.side_menu.grid_rowconfigure(4, weight=1)
+        self.side_menu.grid_rowconfigure(5, weight=1)
         menu_image = ctk.CTkImage(
             light_image=Image.open("./assets/zzz.png"),
             dark_image=Image.open("./assets/zzz.png"),
@@ -78,6 +76,15 @@ class App(ctk.CTk):
             width=220,
         )
         self.custom_pred_button.grid(row=3, column=0, padx=20, pady=10)
+        self.credits_button = ctk.CTkButton(
+            self.side_menu,
+            text="Credits",
+            command=self.credits_screen,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            border_spacing=10,
+            width=220,
+        )
+        self.credits_button.grid(row=4, column=0, padx=20, pady=10)
         self.theme_mode_label = ctk.CTkLabel(
             self.side_menu,
             text="Change Theme:",
@@ -96,30 +103,80 @@ class App(ctk.CTk):
 
         self.start_screen()
 
-        self.credentials_label = ctk.CTkLabel(
-            self.side_menu,
-            text="Designed by Maciej Sanocki, Icons by Icons8",
-            font=ctk.CTkFont(size=9),
-        )
-        self.credentials_label.grid(row=8, column=0, padx=(0, 10), sticky="wes")
-
     def theme_mode(self, new_theme_mode):
         ctk.set_appearance_mode(new_theme_mode)
 
     def start_screen(self):
         self.reset_menu_buttons()
         self.start_button.configure(fg_color="#282828", hover_color="#282828")
-        # main content
+
         self.main_content = ctk.CTkFrame(self, corner_radius=10)
         self.main_content.grid(
             row=0, column=2, padx=(7, 2), pady=2, rowspan=4, sticky="news"
         )
         self.main_content.grid_rowconfigure(0, weight=1)
         self.main_content.grid_columnconfigure(0, weight=1)
-        self.placeholder_content = ctk.CTkLabel(
-            self.main_content, text="HAHAHA", font=ctk.CTkFont(size=20, weight="bold")
+
+        self.welcome_label = ctk.CTkLabel(
+            self.main_content,
+            text="Welcome to",
+            font=ctk.CTkFont(size=40, weight="bold"),
         )
-        self.placeholder_content.grid(row=0, column=0, padx=20, pady=20, sticky="news")
+        self.welcome_label.grid(row=0, column=0, pady=(100, 0), sticky="new")
+        self.sec_welcome_label = ctk.CTkLabel(
+            self.main_content,
+            text="Sleep Stage Classification App",
+            font=ctk.CTkFont(size=40, weight="bold"),
+        )
+        self.sec_welcome_label.grid(row=0, column=0, pady=(150, 0), sticky="new")
+        self.welcome_describe = ctk.CTkLabel(
+            self.main_content,
+            text="Application to classify the phase of sleep by "
+            + "electrical brain activity based on polysomnography",
+            font=ctk.CTkFont(size=14),
+        )
+        self.welcome_describe.grid(row=0, column=0, pady=(200, 0), sticky="new")
+
+        start_image = ctk.CTkImage(
+            light_image=Image.open("./assets/start_image.png"),
+            dark_image=Image.open("./assets/start_image.png"),
+            size=(400, 400),
+        )
+        self.start_background_image = ctk.CTkLabel(
+            self.main_content,
+            text="",
+            image=start_image,
+            anchor="center",
+        )
+        self.start_background_image.grid(
+            row=0, column=0, padx=(70, 0), pady=(250, 0), sticky="new"
+        )
+
+    def credits_screen(self):
+        self.reset_menu_buttons()
+        self.credits_button.configure(fg_color="#282828", hover_color="#282828")
+        self.credits_frame = ctk.CTkFrame(self.main_content, corner_radius=10)
+        self.credits_frame.grid(row=0, column=0, sticky="news")
+        self.credits_frame.grid_rowconfigure(0, weight=1)
+        self.credits_frame.grid_columnconfigure(0, weight=1)
+        self.credits_label = ctk.CTkLabel(
+            self.credits_frame, text="Credits", font=ctk.CTkFont(size=45, weight="bold")
+        )
+        self.credits_label.grid(row=0, column=0, padx=35, pady=(35, 0), sticky="nw")
+        self.credits_textbox = ctk.CTkTextbox(
+            self.credits_frame,
+            fg_color=["gray85", "gray16"],
+            font=ctk.CTkFont(size=18, slant="roman"),
+        )
+        self.credits_textbox.grid(row=0, column=0, padx=35, pady=(90, 0), sticky="news")
+        self.credits_textbox.insert(
+            "0.0",
+            "Zzz icon by icons8\n"
+            + "Polar Bear by MotionsTK.studio\n"
+            + "Upload icons created by Freepik - Flaticon\n"
+            + "Start screen star image by Clker-Free-Vector-Images from Pixabay\n\n"
+            + "Designed by Maciej Sanocki\n",
+        )
 
     def train_edf_file_insert(self):
         filePath = filedialog.askopenfilename()
@@ -292,7 +349,6 @@ class App(ctk.CTk):
         self.result_tab_view.add("Predicted Events Plot")
         self.result_tab_view.set("Summary")
 
-        # first result screen
         self.result_tab_view.tab("Summary").grid_rowconfigure(7, weight=1)
         self.result_tab_view.tab("Summary").grid_columnconfigure(0, weight=1)
         self.first_result_label = ctk.CTkLabel(
@@ -483,7 +539,6 @@ class App(ctk.CTk):
             row=0, column=0, sticky="news"
         )
 
-        # second result screen
         self.result_tab_view.tab("Classification Report").grid_rowconfigure(0, weight=1)
         self.result_tab_view.tab("Classification Report").grid_columnconfigure(
             0, weight=1
@@ -588,7 +643,7 @@ class App(ctk.CTk):
             self.result_max_features_value.insert(0, self.max_feat)
         self.result_random_state_value.insert(0, self.rand_st)
         self.result_accuracy_value.insert(0, round(self.accuracy, 2))
-        self.result_total_time_value.insert(0, round(self.total_time, 2))
+        self.result_total_time_value.insert(0, str(round(self.total_time, 2)) + "s")
 
         self.result_total_time_value.configure(state="disabled")
         self.result_accuracy_value.configure(state="disabled")
@@ -650,6 +705,9 @@ class App(ctk.CTk):
             fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
         )
         self.start_button.configure(
+            fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
+        )
+        self.credits_button.configure(
             fg_color=["#3a7ebf", "#1f538d"], hover_color=["#325882", "#14375e"]
         )
 
@@ -1264,8 +1322,6 @@ class App(ctk.CTk):
         self.custom_predict_start_button.grid(
             row=13, column=0, padx=(0, 10), pady=(0, 20), sticky="e"
         )
-
-        # default values setters
         self.n_estimators_progressbar.set(100)
         self.n_estimators_value.insert(0, 100)
         self.min_samples_leaf_progressbar.set(1)

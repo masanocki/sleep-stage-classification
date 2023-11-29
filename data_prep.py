@@ -1,6 +1,5 @@
 import mne
 import numpy as np
-from mne.time_frequency import psd_array_welch
 
 
 # data_type is for selecting how do you want to load data:
@@ -19,12 +18,6 @@ def read_file(filepath, data_type="raw", drop=False):
     if data_type == "df":
         data = data.to_data_frame()
     return data
-
-
-# for this step data have to be raw
-def preprocess(data):
-    epochs = mne.make_fixed_length_epochs(data, duration=30, preload=True)
-    return epochs
 
 
 def eeg_power_band(epochs):
