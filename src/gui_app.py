@@ -1,17 +1,18 @@
 import random
 import sys
-import customtkinter as ctk
-import tkinter as tk
 import time
-from tkinter import ttk
-from customtkinter import filedialog
-from PIL import Image
-from custompred import CustomTrainPredict
-from pretrained_pred import PretrainedPred
+import tkinter as tk
 from io import StringIO
 from threading import Thread
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import ttk
 
+import customtkinter as ctk
+from customtkinter import filedialog
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PIL import Image
+
+from custompred import CustomTrainPredict
+from pretrained_pred import PretrainedPred
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")

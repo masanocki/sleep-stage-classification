@@ -1,14 +1,15 @@
-import mne
+import joblib
 import matplotlib
+import mne
 import numpy as np
-import data_prep as dp
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     classification_report,
     confusion_matrix,
-    ConfusionMatrixDisplay,
 )
-import joblib
+
+import data_prep as dp
 
 
 class PretrainedPred:

@@ -1,16 +1,17 @@
-import numpy as np
-import mne
 import matplotlib
-import data_prep as dp
+import mne
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import FunctionTransformer
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     classification_report,
     confusion_matrix,
-    ConfusionMatrixDisplay,
 )
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import FunctionTransformer
+
+import data_prep as dp
 
 
 class CustomTrainPredict:
